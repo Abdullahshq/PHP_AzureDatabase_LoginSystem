@@ -7,6 +7,19 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     header("location: login.php");
     exit;
 }
+
+require_once "conn.php";
+
+// Fetch user details
+$tsql = "SELECT Email, LastLoginTime, IPAddress, CreatedAt FROM Login WHERE LoginUsername = ?";
+$params = array($_SESSION["username"]);
+$stmt = sqlsrv_query($conn, $tsql, $params);
+
+if($stmt === false) {
+    die(FormatErrors(sqlsrv_errors()));
+}
+
+$userDetails = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
 ?>
  
 <!DOCTYPE html>
@@ -25,31 +38,25 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
             font: 14px sans-serif; 
             background-color: #fafafa;
         }
-        .login-block{ 
+        .content-block{ 
             padding: 20px; 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            min-height: 100vh;
+            margin: 0 auto;
+            max-width: 800px;
         }
         .wrapper{ 
-            width:100%;
-            height:100%;
             padding: 20px; 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
             background-color: white;
             border: 1px solid #eaeaea;
+            border-radius: 4px;
         }
-        .logout-button{ 
-            color: #f9f9f9;
-            background-color: #00bfff;
-            border-color: #eaeaea;
+        .user-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .page-header {
+            margin-top: 0;
         }
     </style>
     <script>
@@ -65,14 +72,26 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     </script>
 </head>
 <body>
-    <div class="login-block">
+    <div class="content-block">
         <div class="wrapper">
-            <h2>secure content page</h2>
-            </br>
-            <h1>Hi, <b><?php echo htmlspecialchars($_SESSION["username"]); ?></b>. Welcome to secure content page.</h1>
-            <input type="submit" class="btn btn-primary logout-button" value="Logout">
-            <a href="https://childofcode.com/">by childofcode.com</a>
-        </div>    
+            <div class="page-header">
+                <h1>Hi, <b><?php echo htmlspecialchars($_SESSION["username"]); ?></b>. Welcome to your dashboard.</h1>
+            </div>
+            <div class="user-info">
+                <h3>Your Account Information</h3>
+                <p><strong>Email:</strong> <?php echo htmlspecialchars($userDetails['Email']); ?></p>
+                <p><strong>Last Login:</strong> <?php echo $userDetails['LastLoginTime'] ? $userDetails['LastLoginTime']->format('Y-m-d H:i:s') : 'Never'; ?></p>
+                <p><strong>IP Address:</strong> <?php echo htmlspecialchars($userDetails['IPAddress']); ?></p>
+                <p><strong>Account Created:</strong> <?php echo $userDetails['CreatedAt']->format('Y-m-d H:i:s'); ?></p>
+                <p><strong>Permission Level:</strong> <?php echo htmlspecialchars($_SESSION["userpermission"]); ?></p>
+            </div>
+            <p>
+                <a href="logout.php" class="btn btn-danger">Sign Out</a>
+            </p>
+        </div>
     </div>
 </body>
 </html>
+<?php
+sqlsrv_close($conn);
+?>

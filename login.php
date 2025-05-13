@@ -214,6 +214,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <div class="form-group">
                     <input type="submit" class="btn btn-primary login-button" value="Login">
                 </div>
+                <p>Don't have an account? <a href="register.php">Sign up now</a></p>
+                <p>Forgot your password? <a href="reset-password.php">Reset it here</a></p>
             </form>
             <a href="https://childofcode.com/">by childofcode.com</a>
         </div>    
